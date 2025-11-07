@@ -28,7 +28,19 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  final int _quantity = 0;
+  int _quantity = 0;
+
+void _increaseQuantity() {
+  if (_quantity < widget.maxQuantity) {
+    setState(() => _quantity++);
+  }
+}
+
+void _decreaseQuantity() {
+  if (_quantity > 0) {
+    setState(() => _quantity--);
+  }
+}
 
   @override
 Widget build(BuildContext context) {
