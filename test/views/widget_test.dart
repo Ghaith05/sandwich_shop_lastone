@@ -171,6 +171,30 @@ void main() {
       expect(find.text('Note: Lots of lettuce'), findsOneWidget);
     });
   });
+
+  group('OrderScreen - Sandwich Type Switch', () {
+    testWidgets('toggles sandwich type with Switch',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const App());
+
+      // Verify initial state is 'footlong' (with bread type)
+      expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
+
+      // Find the Switch
+      final switchFinder = find.byType(Switch);
+      expect(switchFinder, findsOneWidget);
+
+      // Tap the Switch to toggle to six-inch
+      await tester.tap(switchFinder);
+      await tester.pumpAndSettle();
+      expect(find.text('0 white six-inch sandwich(es): '), findsOneWidget);
+
+      // Tap the Switch to toggle back to footlong
+      await tester.tap(switchFinder);
+      await tester.pumpAndSettle();
+      expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
+    });
+  });
 }
 
 /// Verifies that the app's initial screen displays the correct static content.
@@ -189,4 +213,3 @@ Future<void> _testAppDisplaysCorrectInitialContent(WidgetTester tester) async {
 }
 
 /// The main entry point for running all widget tests.
-
