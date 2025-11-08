@@ -9,17 +9,129 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Sandwich Shop App',
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Sandwich Counter')),
-        body: const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            OrderItemDisplay(3, 'BLT'),
-            OrderItemDisplay(5, 'Club'),
-            OrderItemDisplay(2, 'Veggie'),
+      home: OrderScreen(maxQuantity: 5),
+    );
+  }
+}
+
+class OrderScreen extends StatefulWidget {
+  final int maxQuantity;
+
+  const OrderScreen({super.key, this.maxQuantity = 10});
+
+  @override
+  State<OrderScreen> createState() {
+    return _OrderScreenState();
+  }
+}
+
+class _OrderScreenState extends State<OrderScreen> {
+  int _quantity = 0;
+  final TextEditingController _noteController = TextEditingController();
+  String _selectedSize = 'Footlong';
+
+  void _increaseQuantity() {
+    if (_quantity < widget.maxQuantity) {
+      setState(() => _quantity++);
+      final note = _noteController.text.trim();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'Added ($_selectedSize): ${note.isEmpty ? '(no note)' : note}')),
+      );
+    }
+  }
+
+  void _decreaseQuantity() {
+    if (_quantity > 0) {
+      setState(() => _quantity--);
+      final note = _noteController.text.trim();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'Removed ($_selectedSize): ${note.isEmpty ? '(no note)' : note}')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Sandwich Counter'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            OrderItemDisplay(
+              _quantity,
+              _selectedSize,
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48.0),
+              child: DropdownButton<String>(
+                value: _selectedSize,
+                isExpanded: true,
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    setState(() => _selectedSize = newValue);
+                  }
+                },
+                items: <String>['Footlong', 'Six-inch']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: TextField(
+                controller: _noteController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Order note',
+                  hintText: 'e.g. no onions, extra pickles',
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed:
+                      _quantity < widget.maxQuantity ? _increaseQuantity : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Add'),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton(
+                  onPressed: _quantity > 0 ? _decreaseQuantity : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Remove'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -89,7 +201,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
+      body: const Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
