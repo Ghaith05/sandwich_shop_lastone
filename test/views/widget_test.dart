@@ -173,26 +173,48 @@ void main() {
   });
 
   group('OrderScreen - Sandwich Type Switch', () {
-    testWidgets('toggles sandwich type with Switch',
+    testWidgets('toggles footlong/six-inch switch',
         (WidgetTester tester) async {
       await tester.pumpWidget(const App());
 
-      // Verify initial state is 'footlong' (with bread type)
+      // There are two Switch widgets: [0] is footlong/six-inch, [1] is toasted/untoasted
+      final switchFinders = find.byType(Switch);
+      expect(switchFinders, findsNWidgets(2));
+
+      // Initial state: footlong
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
 
-      // Find the Switch
-      final switchFinder = find.byType(Switch);
-      expect(switchFinder, findsOneWidget);
-
-      // Tap the Switch to toggle to six-inch
-      await tester.tap(switchFinder);
+      // Tap the first Switch (footlong/six-inch)
+      await tester.tap(switchFinders.at(0));
       await tester.pumpAndSettle();
       expect(find.text('0 white six-inch sandwich(es): '), findsOneWidget);
 
-      // Tap the Switch to toggle back to footlong
-      await tester.tap(switchFinder);
+      // Tap again to return to footlong
+      await tester.tap(switchFinders.at(0));
       await tester.pumpAndSettle();
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
+    });
+
+    testWidgets('toggles toasted/untoasted switch (debug)',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const App());
+
+      // There are two Switch widgets: [0] is footlong/six-inch, [1] is toasted/untoasted
+      final switchFinders = find.byType(Switch);
+      expect(switchFinders, findsNWidgets(2));
+
+      // No direct text output for toasted/untoasted, so we debug by toggling and checking widget state
+      // Tap the second Switch (toasted/untoasted)
+      await tester.tap(switchFinders.at(1));
+      await tester.pumpAndSettle();
+      // No visible text changes, but you could add debug output or check widget state if exposed
+      // For now, just ensure the switch can be toggled without error
+      expect(switchFinders, findsNWidgets(2));
+
+      // Tap again to return
+      await tester.tap(switchFinders.at(1));
+      await tester.pumpAndSettle();
+      expect(switchFinders, findsNWidgets(2));
     });
   });
 }
