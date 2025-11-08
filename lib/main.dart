@@ -30,13 +30,16 @@ class OrderScreen extends StatefulWidget {
 class _OrderScreenState extends State<OrderScreen> {
   int _quantity = 0;
   final TextEditingController _noteController = TextEditingController();
+  String _selectedSize = 'Footlong';
 
   void _increaseQuantity() {
     if (_quantity < widget.maxQuantity) {
       setState(() => _quantity++);
       final note = _noteController.text.trim();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Added: ${note.isEmpty ? '(no note)' : note}')),
+        SnackBar(
+            content: Text(
+                'Added ($_selectedSize): ${note.isEmpty ? '(no note)' : note}')),
       );
     }
   }
@@ -47,7 +50,8 @@ class _OrderScreenState extends State<OrderScreen> {
       final note = _noteController.text.trim();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Removed: ${note.isEmpty ? '(no note)' : note}')),
+            content: Text(
+                'Removed ($_selectedSize): ${note.isEmpty ? '(no note)' : note}')),
       );
     }
   }
@@ -70,7 +74,27 @@ class _OrderScreenState extends State<OrderScreen> {
           children: <Widget>[
             OrderItemDisplay(
               _quantity,
-              'Footlong',
+              _selectedSize,
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 48.0),
+              child: DropdownButton<String>(
+                value: _selectedSize,
+                isExpanded: true,
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    setState(() => _selectedSize = newValue);
+                  }
+                },
+                items: <String>['Footlong', 'Six-inch']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
             ),
             const SizedBox(height: 12),
             Padding(
