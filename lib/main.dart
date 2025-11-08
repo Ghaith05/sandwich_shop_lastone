@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'views/app_styles.dart';
 
 void main() {
   runApp(const App());
@@ -147,7 +148,10 @@ class OrderItemDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text('$quantity $itemType sandwich(es): ${'🥪' * quantity}');
+    return Text(
+      '$quantity $itemType sandwich(es): ${'🥪' * quantity}',
+      style: heading1,
+    );
   }
 }
 
