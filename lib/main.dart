@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'views/app_styles.dart';
-import 'package:sandwich_shop/repositories/order_repository.dart';
 import 'package:sandwich_shop/repositories/pricing_repository.dart';
-
-enum BreadType { white, wheat, wholemeal }
+import 'package:sandwich_shop/models/cart.dart';
+import 'package:sandwich_shop/models/sandwich.dart';
 
 void main() {
   runApp(const App());
@@ -34,6 +33,7 @@ class OrderScreen extends StatefulWidget {
 
 class _OrderScreenState extends State<OrderScreen> {
   final PricingRepository _pricingRepository = PricingRepository();
+  final Cart _cart = Cart();
   int _quantity = 0;
   final TextEditingController _notesController = TextEditingController();
   bool _isFootlong = true;
@@ -82,6 +82,35 @@ class _OrderScreenState extends State<OrderScreen> {
     }
   }
 
+  void _addToCart() {
+    if (_quantity > 0) {
+      final sandwich = Sandwich(
+        type: SandwichType.veggieDelight,
+        isFootlong: _isFootlong,
+        breadType: _selectedBreadType,
+      );
+
+      _cart.addToCart(
+        sandwich: sandwich,
+        quantity: _quantity,
+        note: _notesController.text.isEmpty ? null : _notesController.text,
+      );
+
+      setState(() {
+        _quantity = 0;
+        _notesController.clear();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              'Added $_quantity ${_isFootlong ? "footlong" : "six-inch"} sandwich(es) to cart'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   List<DropdownMenuEntry<BreadType>> _buildDropdownEntries() {
     List<DropdownMenuEntry<BreadType>> entries = [];
     for (BreadType bread in BreadType.values) {
@@ -119,6 +148,42 @@ class _OrderScreenState extends State<OrderScreen> {
           'Sandwich Counter',
           style: heading1,
         ),
+        actions: [
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.shopping_cart),
+                onPressed: () {
+                  // TODO: Show cart details
+                },
+              ),
+              if (_cart.totalItems > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '${_cart.totalItems}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -183,17 +248,33 @@ class _OrderScreenState extends State<OrderScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 StyledButton(
-                  onPressed: _getIncreaseCallback(),
-                  icon: Icons.add,
-                  label: 'Add',
-                  backgroundColor: Colors.green,
+                  onPressed: _quantity > 0 ? () => _addToCart() : null,
+                  icon: Icons.add_shopping_cart,
+                  label: 'Add to Cart',
+                  backgroundColor: Colors.blue,
                 ),
-                const SizedBox(width: 8),
-                StyledButton(
-                  onPressed: _getDecreaseCallback(),
-                  icon: Icons.remove,
-                  label: 'Remove',
-                  backgroundColor: Colors.red,
+                const SizedBox(width: 16),
+                Row(
+                  children: [
+                    StyledButton(
+                      onPressed: _getDecreaseCallback(),
+                      icon: Icons.remove,
+                      label: 'Remove',
+                      backgroundColor: Colors.red,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$_quantity',
+                      style: normalText,
+                    ),
+                    const SizedBox(width: 8),
+                    StyledButton(
+                      onPressed: _getIncreaseCallback(),
+                      icon: Icons.add,
+                      label: 'Add',
+                      backgroundColor: Colors.green,
+                    ),
+                  ],
                 ),
               ],
             ),
