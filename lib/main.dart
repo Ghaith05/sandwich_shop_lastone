@@ -39,6 +39,7 @@ class _OrderScreenState extends State<OrderScreen> {
   bool _isFootlong = true;
   BreadType _selectedBreadType = BreadType.white;
   bool _isToasted = false;
+  String? _confirmationMessage;
 
   @override
   void initState() {
@@ -98,24 +99,27 @@ class _OrderScreenState extends State<OrderScreen> {
                 'assets/images/veggieDelight_${_isFootlong ? 'footlong' : 'six_inch'}.png',
           );
 
+      // Build confirmation message before we reset the quantity
+      final String msg =
+          'Added $_quantity ${_isFootlong ? "footlong" : "six-inch"} sandwich(es) to cart';
+
       _cart.addToCart(
         sandwich: sandwich,
         quantity: _quantity,
         note: _notesController.text.isEmpty ? null : _notesController.text,
       );
 
-      debugPrint(
-          'Added $_quantity ${_isFootlong ? "footlong" : "six-inch"} sandwich(es) to cart');
+      debugPrint(msg);
 
       setState(() {
+        _confirmationMessage = msg;
         _quantity = 0;
         _notesController.clear();
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              'Added $_quantity ${_isFootlong ? "footlong" : "six-inch"} sandwich(es) to cart'),
+          content: Text(msg),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -123,8 +127,11 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   String _getCurrentImagePath() {
-    if (_selectedSandwich != null && _selectedSandwich!.image.isNotEmpty) {
-      return _selectedSandwich!.image;
+    // Prefer computing the image path from the selected sandwich id and
+    // current size so toggling size updates the preview reliably.
+    if (_selectedSandwich != null) {
+      final id = _selectedSandwich!.id;
+      return 'assets/images/${id}_${_isFootlong ? 'footlong' : 'six_inch'}.png';
     }
     return 'assets/images/veggieDelight_${_isFootlong ? 'footlong' : 'six_inch'}.png';
   }
@@ -273,9 +280,8 @@ class _OrderScreenState extends State<OrderScreen> {
                     return const Text('No sandwiches available',
                         style: normalText);
                   }
-                  if (_selectedSandwich == null) {
-                    _selectedSandwich = sandwiches.first;
-                  }
+                  // Use null-aware assignment to satisfy analyzer suggestion
+                  _selectedSandwich ??= sandwiches.first;
                   return DropdownButton<Sandwich>(
                     value: _selectedSandwich,
                     items: sandwiches
@@ -297,6 +303,26 @@ class _OrderScreenState extends State<OrderScreen> {
                 onSelected: _onBreadTypeSelected,
                 dropdownMenuEntries: _buildDropdownEntries(),
               ),
+              const SizedBox(height: 12),
+              // Confirmation message displayed after adding to cart
+              if (_confirmationMessage != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 4.0),
+                  child: Container(
+                    key: const Key('confirmation_message'),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      // Avoid deprecated withOpacity; use explicit RGBA color
+                      color: const Color.fromRGBO(76, 175, 80, 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      _confirmationMessage!,
+                      style: normalText,
+                    ),
+                  ),
+                ),
               const SizedBox(height: 20),
               Padding(
                 padding: const EdgeInsets.all(40.0),
