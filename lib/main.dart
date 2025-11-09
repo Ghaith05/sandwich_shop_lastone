@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'views/app_styles.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
+import 'package:sandwich_shop/models/repositories/sandwich_repository.dart';
 
 void main() {
   runApp(const App());
@@ -32,6 +33,7 @@ class OrderScreen extends StatefulWidget {
 
 class _OrderScreenState extends State<OrderScreen> {
   final Cart _cart = Cart();
+  final SandwichRepository _repo = SandwichRepository();
   int _quantity = 0;
   final TextEditingController _notesController = TextEditingController();
   bool _isFootlong = true;
@@ -44,6 +46,8 @@ class _OrderScreenState extends State<OrderScreen> {
     _notesController.addListener(() {
       setState(() {});
     });
+    // Kick off async load of sandwiches and keep the future for a FutureBuilder
+    _menuFuture = _repo.getAllSandwiches();
   }
 
   @override
@@ -82,16 +86,17 @@ class _OrderScreenState extends State<OrderScreen> {
 
   void _addToCart() {
     if (_quantity > 0) {
-      final sandwich = Sandwich(
-        id: 'veggieDelight',
-        name: 'Veggie Delight',
-        description: '',
-        available: true,
-        breadType: _selectedBreadType,
-        size: _isFootlong ? SandwichSize.footlong : SandwichSize.sixInch,
-        image:
-            'assets/images/veggieDelight_${_isFootlong ? 'footlong' : 'six_inch'}.png',
-      );
+      final sandwich = _selectedSandwich ??
+          Sandwich(
+            id: 'veggieDelight',
+            name: 'Veggie Delight',
+            description: '',
+            available: true,
+            breadType: _selectedBreadType,
+            size: _isFootlong ? SandwichSize.footlong : SandwichSize.sixInch,
+            image:
+                'assets/images/veggieDelight_${_isFootlong ? 'footlong' : 'six_inch'}.png',
+          );
 
       _cart.addToCart(
         sandwich: sandwich,
@@ -118,9 +123,14 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   String _getCurrentImagePath() {
-    // Build a lightweight sandwich descriptor for image lookup
+    if (_selectedSandwich != null && _selectedSandwich!.image.isNotEmpty) {
+      return _selectedSandwich!.image;
+    }
     return 'assets/images/veggieDelight_${_isFootlong ? 'footlong' : 'six_inch'}.png';
   }
+
+  Future<List<Sandwich>>? _menuFuture;
+  Sandwich? _selectedSandwich;
 
   List<DropdownMenuEntry<BreadType>> _buildDropdownEntries() {
     List<DropdownMenuEntry<BreadType>> entries = [];
@@ -248,6 +258,39 @@ class _OrderScreenState extends State<OrderScreen> {
                 ],
               ),
               const SizedBox(height: 10),
+              FutureBuilder<List<Sandwich>>(
+                future: _menuFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    return const Text('Error loading sandwiches',
+                        style: normalText);
+                  }
+                  final sandwiches = snapshot.data ?? [];
+                  if (sandwiches.isEmpty) {
+                    return const Text('No sandwiches available',
+                        style: normalText);
+                  }
+                  if (_selectedSandwich == null) {
+                    _selectedSandwich = sandwiches.first;
+                  }
+                  return DropdownButton<Sandwich>(
+                    value: _selectedSandwich,
+                    items: sandwiches
+                        .map((s) => DropdownMenuItem<Sandwich>(
+                              value: s,
+                              child: Text(s.name, style: normalText),
+                            ))
+                        .toList(),
+                    onChanged: (s) {
+                      setState(() => _selectedSandwich = s);
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
               DropdownMenu<BreadType>(
                 textStyle: normalText,
                 initialSelection: _selectedBreadType,
