@@ -373,6 +373,26 @@ class _OrderScreenState extends State<OrderScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          key: const Key('cart_summary'),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          decoration: BoxDecoration(
+            color: const Color.fromRGBO(0, 0, 0, 0.03),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Text('Cart: ${_cart.totalItems} items', style: normalText),
+              const SizedBox(width: 12),
+              Text('Total: £${_cart.totalPrice.toStringAsFixed(2)}',
+                  style: normalText),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

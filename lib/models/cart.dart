@@ -54,7 +54,11 @@ class Cart {
     const double sixInchPrice = 7.0;
     const double footlongPrice = 11.0;
     return _items.fold(0.0, (sum, item) {
-      final pricePer = (item.sandwich.isFootlong == true) ? footlongPrice : sixInchPrice;
+      // Determine price from the sandwich size field. Avoid relying on any
+      // nullable helper on the Sandwich model.
+      final pricePer = (item.sandwich.size == SandwichSize.footlong)
+          ? footlongPrice
+          : sixInchPrice;
       return sum + pricePer * item.quantity;
     });
   }

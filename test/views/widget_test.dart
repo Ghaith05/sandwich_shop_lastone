@@ -42,6 +42,17 @@ void main() {
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
       // Cart badge should show 2
       expect(find.text('2'), findsOneWidget);
+      // Cart summary should show 2 items and total price for two footlongs (£11 each)
+      final cartSummary = find.byKey(const Key('cart_summary'));
+      expect(cartSummary, findsOneWidget);
+      expect(
+          find.descendant(
+              of: cartSummary, matching: find.textContaining('Cart: 2')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: cartSummary, matching: find.textContaining('£22.00')),
+          findsOneWidget);
     });
     testWidgets('shows initial quantity and title',
         (WidgetTester tester) async {
@@ -78,6 +89,7 @@ void main() {
     testWidgets('does not decrement below zero', (WidgetTester tester) async {
       await tester.pumpWidget(const App());
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
+      await tester.ensureVisible(find.widgetWithText(ElevatedButton, 'Remove'));
       await tester.tap(find.widgetWithText(ElevatedButton, 'Remove'));
       await tester.pump();
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
@@ -105,10 +117,12 @@ void main() {
       final switchFinders = find.byType(Switch);
       expect(switchFinders, findsNWidgets(2));
       // Tap footlong/six-inch switch
+      await tester.ensureVisible(switchFinders.at(0));
       await tester.tap(switchFinders.at(0));
       await tester.pumpAndSettle();
       expect(find.textContaining('six-inch sandwich'), findsOneWidget);
       // Tap again to return to footlong
+      await tester.ensureVisible(switchFinders.at(0));
       await tester.tap(switchFinders.at(0));
       await tester.pumpAndSettle();
       expect(find.textContaining('footlong sandwich'), findsOneWidget);
@@ -116,8 +130,10 @@ void main() {
     testWidgets('changing bread type updates label',
         (WidgetTester tester) async {
       await tester.pumpWidget(const App());
+      await tester.ensureVisible(find.byType(DropdownMenu<BreadType>));
       await tester.tap(find.byType(DropdownMenu<BreadType>));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('wheat').last);
       await tester.tap(find.text('wheat').last);
       await tester.pumpAndSettle();
       expect(find.textContaining('wheat footlong sandwich'), findsOneWidget);
@@ -150,17 +166,32 @@ void main() {
       expect(find.byType(SnackBar), findsOneWidget);
       // Note should reset
       expect(find.text('Note: No notes added.'), findsOneWidget);
+      // Cart summary should show 1 item and total price for one footlong (£11)
+      final cartSummary = find.byKey(const Key('cart_summary'));
+      expect(cartSummary, findsOneWidget);
+      expect(
+          find.descendant(
+              of: cartSummary, matching: find.textContaining('Cart: 1')),
+          findsOneWidget);
+      expect(
+          find.descendant(
+              of: cartSummary, matching: find.textContaining('£11.00')),
+          findsOneWidget);
     });
     testWidgets('changes bread type with DropdownMenu',
         (WidgetTester tester) async {
       await tester.pumpWidget(const App());
+      await tester.ensureVisible(find.byType(DropdownMenu<BreadType>));
       await tester.tap(find.byType(DropdownMenu<BreadType>));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('wheat').last);
       await tester.tap(find.text('wheat').last);
       await tester.pumpAndSettle();
       expect(find.textContaining('wheat footlong sandwich'), findsOneWidget);
+      await tester.ensureVisible(find.byType(DropdownMenu<BreadType>));
       await tester.tap(find.byType(DropdownMenu<BreadType>));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('wholemeal').last);
       await tester.tap(find.text('wholemeal').last);
       await tester.pumpAndSettle();
       expect(
@@ -275,11 +306,13 @@ void main() {
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
 
       // Tap the first Switch (footlong/six-inch)
+      await tester.ensureVisible(switchFinders.at(0));
       await tester.tap(switchFinders.at(0));
       await tester.pumpAndSettle();
       expect(find.text('0 white six-inch sandwich(es): '), findsOneWidget);
 
       // Tap again to return to footlong
+      await tester.ensureVisible(switchFinders.at(0));
       await tester.tap(switchFinders.at(0));
       await tester.pumpAndSettle();
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
@@ -295,6 +328,7 @@ void main() {
 
       // No direct text output for toasted/untoasted, so we debug by toggling and checking widget state
       // Tap the second Switch (toasted/untoasted)
+      await tester.ensureVisible(switchFinders.at(1));
       await tester.tap(switchFinders.at(1));
       await tester.pumpAndSettle();
       // No visible text changes, but you could add debug output or check widget state if exposed
@@ -302,6 +336,7 @@ void main() {
       expect(switchFinders, findsNWidgets(2));
 
       // Tap again to return
+      await tester.ensureVisible(switchFinders.at(1));
       await tester.tap(switchFinders.at(1));
       await tester.pumpAndSettle();
       expect(switchFinders, findsNWidgets(2));

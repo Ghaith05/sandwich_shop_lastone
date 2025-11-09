@@ -39,5 +39,6 @@ class Sandwich {
     );
   }
 
-  bool? get isFootlong => null;
+  /// True when this sandwich is a footlong.
+  bool get isFootlong => size == SandwichSize.footlong;
 }
