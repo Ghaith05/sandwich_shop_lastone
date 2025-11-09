@@ -11,14 +11,22 @@ void main() {
     setUp(() {
       cart = Cart();
       footlongSandwich = Sandwich(
-        type: SandwichType.veggieDelight,
-        isFootlong: true,
+        id: 'veggieDelight',
+        name: 'Veggie Delight',
+        description: '',
+        available: true,
         breadType: BreadType.white,
+        size: SandwichSize.footlong,
+        image: 'assets/images/veggieDelight_footlong.png',
       );
       sixInchSandwich = Sandwich(
-        type: SandwichType.tunaMelt,
-        isFootlong: false,
+        id: 'tunaMelt',
+        name: 'Tuna Melt',
+        description: '',
+        available: true,
         breadType: BreadType.wheat,
+        size: SandwichSize.sixInch,
+        image: 'assets/images/tunaMelt_six_inch.png',
       );
     });
 
@@ -32,9 +40,9 @@ void main() {
       cart.addToCart(sandwich: sixInchSandwich, quantity: 2);
 
       expect(cart.items.length, 2);
-      expect(cart.items[0].sandwich.isFootlong, true);
+      expect(cart.items[0].sandwich.size, SandwichSize.footlong);
       expect(cart.items[0].quantity, 1);
-      expect(cart.items[1].sandwich.isFootlong, false);
+      expect(cart.items[1].sandwich.size, SandwichSize.sixInch);
       expect(cart.items[1].quantity, 2);
       expect(cart.totalItems, 3);
     });
@@ -66,7 +74,7 @@ void main() {
 
       cart.removeFromCart(0);
       expect(cart.items.length, 1);
-      expect(cart.items[0].sandwich.isFootlong, false);
+      expect(cart.items[0].sandwich.size, SandwichSize.sixInch);
     });
 
     test('throws error when removing with invalid index', () {
