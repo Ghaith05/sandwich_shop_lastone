@@ -83,9 +83,14 @@ class _OrderScreenState extends State<OrderScreen> {
   void _addToCart() {
     if (_quantity > 0) {
       final sandwich = Sandwich(
-        type: SandwichType.veggieDelight,
-        isFootlong: _isFootlong,
+        id: 'veggieDelight',
+        name: 'Veggie Delight',
+        description: '',
+        available: true,
         breadType: _selectedBreadType,
+        size: _isFootlong ? SandwichSize.footlong : SandwichSize.sixInch,
+        image:
+            'assets/images/veggieDelight_${_isFootlong ? 'footlong' : 'six_inch'}.png',
       );
 
       _cart.addToCart(
@@ -113,12 +118,8 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   String _getCurrentImagePath() {
-    final sandwich = Sandwich(
-      type: SandwichType.veggieDelight,
-      isFootlong: _isFootlong,
-      breadType: _selectedBreadType,
-    );
-    return sandwich.image;
+    // Build a lightweight sandwich descriptor for image lookup
+    return 'assets/images/veggieDelight_${_isFootlong ? 'footlong' : 'six_inch'}.png';
   }
 
   List<DropdownMenuEntry<BreadType>> _buildDropdownEntries() {
