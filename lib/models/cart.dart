@@ -54,7 +54,7 @@ class Cart {
     const double sixInchPrice = 7.0;
     const double footlongPrice = 11.0;
     return _items.fold(0.0, (sum, item) {
-      final pricePer = item.sandwich.isFootlong ? footlongPrice : sixInchPrice;
+      final pricePer = (item.sandwich.isFootlong == true) ? footlongPrice : sixInchPrice;
       return sum + pricePer * item.quantity;
     });
   }
