@@ -3,63 +3,33 @@ import 'package:sandwich_shop/models/sandwich.dart';
 
 void main() {
   group('Sandwich model', () {
-    test('name getter returns correct string for each type', () {
-      expect(
-        Sandwich(
-                type: SandwichType.veggieDelight,
-                isFootlong: true,
-                breadType: BreadType.white)
-            .name,
-        'Veggie Delight',
-      );
-      expect(
-        Sandwich(
-                type: SandwichType.chickenTeriyaki,
-                isFootlong: false,
-                breadType: BreadType.wheat)
-            .name,
-        'Chicken Teriyaki',
-      );
-      expect(
-        Sandwich(
-                type: SandwichType.tunaMelt,
-                isFootlong: true,
-                breadType: BreadType.wholemeal)
-            .name,
-        'Tuna Melt',
-      );
-      expect(
-        Sandwich(
-                type: SandwichType.meatballMarinara,
-                isFootlong: false,
-                breadType: BreadType.white)
-            .name,
-        'Meatball Marinara',
-      );
-    });
-
-    test('image getter returns correct path for footlong and six-inch', () {
+    test('constructors and properties work', () {
       final veggieFootlong = Sandwich(
-        type: SandwichType.veggieDelight,
-        isFootlong: true,
+        id: 'veggieDelight',
+        name: 'Veggie Delight',
+        description: 'A tasty veggie sandwich',
+        available: true,
         breadType: BreadType.white,
+        size: SandwichSize.footlong,
+        image: 'assets/images/veggieDelight_footlong.png',
       );
+
       final veggieSixInch = Sandwich(
-        type: SandwichType.veggieDelight,
-        isFootlong: false,
+        id: 'veggieDelight',
+        name: 'Veggie Delight',
+        description: 'A tasty veggie sandwich',
+        available: true,
         breadType: BreadType.white,
+        size: SandwichSize.sixInch,
+        image: 'assets/images/veggieDelight_six_inch.png',
       );
+
+      expect(veggieFootlong.name, 'Veggie Delight');
+      expect(veggieFootlong.size, SandwichSize.footlong);
+      expect(veggieSixInch.size, SandwichSize.sixInch);
       expect(veggieFootlong.image, 'assets/images/veggieDelight_footlong.png');
       expect(veggieSixInch.image, 'assets/images/veggieDelight_six_inch.png');
-    });
-
-    test('breadType is set correctly', () {
-      final sandwich = Sandwich(
-        type: SandwichType.tunaMelt,
-        isFootlong: true,
-        breadType: BreadType.wholemeal,
-      );
-      expect(sandwich.breadType, BreadType.wholemeal);
+      expect(veggieFootlong.breadType, BreadType.white);
     });
   });
 }
