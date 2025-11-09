@@ -47,4 +47,17 @@ class Cart {
   int get totalItems {
     return _items.fold(0, (sum, item) => sum + item.quantity);
   }
+
+  /// Calculate total price for items in the cart.
+  /// Footlong = £11, Six-inch = £7.
+  double get totalPrice {
+    const double sixInchPrice = 7.0;
+    const double footlongPrice = 11.0;
+    return _items.fold(0.0, (sum, item) {
+      final pricePer = item.sandwich.isFootlong ? footlongPrice : sixInchPrice;
+      return sum + pricePer * item.quantity;
+    });
+  }
+
+  void add(Sandwich sandwich, {required int quantity}) {}
 }
