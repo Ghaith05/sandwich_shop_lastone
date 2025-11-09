@@ -12,27 +12,25 @@ void main() {
   });
 
   group('OrderScreen - Quantity', () {
-    testWidgets('add to cart updates cart and resets quantity',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(const App());
-      // Add 2 sandwiches
-      final addButton = find.widgetWithText(ElevatedButton, 'Add');
-      await tester.ensureVisible(addButton);
-      await tester.tap(addButton);
-      await tester.pump();
-      await tester.tap(addButton);
-      await tester.pump();
-      expect(find.text('2 white footlong sandwich(es): 🥪🥪'), findsOneWidget);
-      // Add to cart
-      final addToCartButton =
-          find.widgetWithText(ElevatedButton, 'Add to Cart');
-      await tester.ensureVisible(addToCartButton);
-      await tester.tap(addToCartButton);
-      await tester.pump();
-      // Quantity should reset
-      expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
-      // Cart badge should show 2
-      expect(find.text('2'), findsOneWidget);
+    testWidgets('add to cart updates cart and resets quantity', (WidgetTester tester) async {
+  await tester.pumpWidget(const App());
+  // Add 2 sandwiches
+  final addButton = find.widgetWithText(ElevatedButton, 'Add');
+  await tester.ensureVisible(addButton);
+  await tester.tap(addButton);
+  await tester.pump();
+  await tester.tap(addButton);
+  await tester.pump();
+  expect(find.text('2 white footlong sandwich(es): 🥪🥪'), findsOneWidget);
+  // Add to cart
+  final addToCartButton = find.widgetWithText(ElevatedButton, 'Add to Cart');
+  await tester.ensureVisible(addToCartButton);
+  await tester.tap(addToCartButton);
+  await tester.pump();
+  // Quantity should reset
+  expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
+  // Cart badge should show 2
+  expect(find.text('2'), findsOneWidget);
     });
     testWidgets('shows initial quantity and title',
         (WidgetTester tester) async {
@@ -43,27 +41,27 @@ void main() {
 
     testWidgets('increments quantity when Add is tapped',
         (WidgetTester tester) async {
-      await tester.pumpWidget(const App());
-      final addButton = find.widgetWithText(ElevatedButton, 'Add');
-      await tester.ensureVisible(addButton);
-      await tester.tap(addButton);
-      await tester.pump();
-      expect(find.text('1 white footlong sandwich(es): 🥪'), findsOneWidget);
+  await tester.pumpWidget(const App());
+  final addButton = find.widgetWithText(ElevatedButton, 'Add');
+  await tester.ensureVisible(addButton);
+  await tester.tap(addButton);
+  await tester.pump();
+  expect(find.text('1 white footlong sandwich(es): 🥪'), findsOneWidget);
     });
 
     testWidgets('decrements quantity when Remove is tapped',
         (WidgetTester tester) async {
-      await tester.pumpWidget(const App());
-      final addButton = find.widgetWithText(ElevatedButton, 'Add');
-      final removeButton = find.widgetWithText(ElevatedButton, 'Remove');
-      await tester.ensureVisible(addButton);
-      await tester.tap(addButton);
-      await tester.pump();
-      expect(find.text('1 white footlong sandwich(es): 🥪'), findsOneWidget);
-      await tester.ensureVisible(removeButton);
-      await tester.tap(removeButton);
-      await tester.pump();
-      expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
+  await tester.pumpWidget(const App());
+  final addButton = find.widgetWithText(ElevatedButton, 'Add');
+  final removeButton = find.widgetWithText(ElevatedButton, 'Remove');
+  await tester.ensureVisible(addButton);
+  await tester.tap(addButton);
+  await tester.pump();
+  expect(find.text('1 white footlong sandwich(es): 🥪'), findsOneWidget);
+  await tester.ensureVisible(removeButton);
+  await tester.tap(removeButton);
+  await tester.pump();
+  expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
     });
 
     testWidgets('does not decrement below zero', (WidgetTester tester) async {
@@ -83,14 +81,12 @@ void main() {
         await tester.tap(addButton);
         await tester.pump();
       }
-      expect(find.text('5 white footlong sandwich(es): 🥪🥪🥪🥪🥪'),
-          findsOneWidget);
+      expect(find.text('5 white footlong sandwich(es): 🥪🥪🥪🥪🥪'), findsOneWidget);
     });
   });
 
   group('OrderScreen - Controls', () {
-    testWidgets('changing sandwich type updates image and label',
-        (WidgetTester tester) async {
+    testWidgets('changing sandwich type updates image and label', (WidgetTester tester) async {
       await tester.pumpWidget(const App());
       // Initial: footlong
       final switchFinders = find.byType(Switch);
@@ -104,8 +100,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('footlong sandwich'), findsOneWidget);
     });
-    testWidgets('changing bread type updates label',
-        (WidgetTester tester) async {
+    testWidgets('changing bread type updates label', (WidgetTester tester) async {
       await tester.pumpWidget(const App());
       await tester.tap(find.byType(DropdownMenu<BreadType>));
       await tester.pumpAndSettle();
@@ -113,25 +108,22 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('wheat footlong sandwich'), findsOneWidget);
     });
-    testWidgets('note field updates and resets after add to cart',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(const App());
-      await tester.enterText(
-          find.byKey(const Key('notes_textfield')), 'No onions');
-      await tester.pump();
-      expect(find.text('Note: No onions'), findsOneWidget);
-      // Add 1 sandwich
-      final addButton = find.widgetWithText(ElevatedButton, 'Add');
-      final addToCartButton =
-          find.widgetWithText(ElevatedButton, 'Add to Cart');
-      await tester.ensureVisible(addButton);
-      await tester.tap(addButton);
-      await tester.pump();
-      await tester.ensureVisible(addToCartButton);
-      await tester.tap(addToCartButton);
-      await tester.pump();
-      // Note should reset
-      expect(find.text('Note: No notes added.'), findsOneWidget);
+    testWidgets('note field updates and resets after add to cart', (WidgetTester tester) async {
+  await tester.pumpWidget(const App());
+  await tester.enterText(find.byKey(const Key('notes_textfield')), 'No onions');
+  await tester.pump();
+  expect(find.text('Note: No onions'), findsOneWidget);
+  // Add 1 sandwich
+  final addButton = find.widgetWithText(ElevatedButton, 'Add');
+  final addToCartButton = find.widgetWithText(ElevatedButton, 'Add to Cart');
+  await tester.ensureVisible(addButton);
+  await tester.tap(addButton);
+  await tester.pump();
+  await tester.ensureVisible(addToCartButton);
+  await tester.tap(addToCartButton);
+  await tester.pump();
+  // Note should reset
+  expect(find.text('Note: No notes added.'), findsOneWidget);
     });
     testWidgets('changes bread type with DropdownMenu',
         (WidgetTester tester) async {
