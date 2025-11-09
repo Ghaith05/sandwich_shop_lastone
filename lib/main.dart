@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'views/app_styles.dart';
-import 'package:sandwich_shop/repositories/pricing_repository.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 
@@ -32,7 +31,6 @@ class OrderScreen extends StatefulWidget {
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  final PricingRepository _pricingRepository = PricingRepository();
   final Cart _cart = Cart();
   int _quantity = 0;
   final TextEditingController _notesController = TextEditingController();
@@ -96,6 +94,9 @@ class _OrderScreenState extends State<OrderScreen> {
         note: _notesController.text.isEmpty ? null : _notesController.text,
       );
 
+      debugPrint(
+          'Added $_quantity ${_isFootlong ? "footlong" : "six-inch"} sandwich(es) to cart');
+
       setState(() {
         _quantity = 0;
         _notesController.clear();
@@ -109,6 +110,15 @@ class _OrderScreenState extends State<OrderScreen> {
         ),
       );
     }
+  }
+
+  String _getCurrentImagePath() {
+    final sandwich = Sandwich(
+      type: SandwichType.veggieDelight,
+      isFootlong: _isFootlong,
+      breadType: _selectedBreadType,
+    );
+    return sandwich.image;
   }
 
   List<DropdownMenuEntry<BreadType>> _buildDropdownEntries() {
@@ -137,10 +147,7 @@ class _OrderScreenState extends State<OrderScreen> {
       noteForDisplay = _notesController.text;
     }
 
-    double totalPrice = _pricingRepository.calculateTotalPrice(
-      quantity: _quantity,
-      isFootlong: _isFootlong,
-    );
+    double totalPrice = _cart.totalPrice;
 
     return Scaffold(
       appBar: AppBar(
@@ -189,100 +196,111 @@ class _OrderScreenState extends State<OrderScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            OrderItemDisplay(
-              quantity: _quantity,
-              itemType: sandwichType,
-              breadType: _selectedBreadType,
-              orderNote: noteForDisplay,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Total Price: £${totalPrice.toStringAsFixed(2)}',
-              style: normalText,
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('six-inch', style: normalText),
-                Switch(
-                  value: _isFootlong,
-                  onChanged: _onSandwichTypeChanged,
-                ),
-                const Text('footlong', style: normalText),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('untoasted', style: normalText),
-                Switch(
-                  value: _isToasted,
-                  onChanged: (value) {
-                    setState(() => _isToasted = value);
-                  },
-                ),
-                const Text('toasted', style: normalText),
-              ],
-            ),
-            const SizedBox(height: 10),
-            DropdownMenu<BreadType>(
-              textStyle: normalText,
-              initialSelection: _selectedBreadType,
-              onSelected: _onBreadTypeSelected,
-              dropdownMenuEntries: _buildDropdownEntries(),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(40.0),
-              child: TextField(
-                key: const Key('notes_textfield'),
-                controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Add a note (e.g., no onions)',
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Image.asset(
+                _getCurrentImagePath(),
+                height: 120,
+                width: 120,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.image_not_supported, size: 80),
+              ),
+              const SizedBox(height: 16),
+              OrderItemDisplay(
+                quantity: _quantity,
+                itemType: sandwichType,
+                breadType: _selectedBreadType,
+                orderNote: noteForDisplay,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Total Price: £${totalPrice.toStringAsFixed(2)}',
+                style: normalText,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('six-inch', style: normalText),
+                  Switch(
+                    value: _isFootlong,
+                    onChanged: _onSandwichTypeChanged,
+                  ),
+                  const Text('footlong', style: normalText),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('untoasted', style: normalText),
+                  Switch(
+                    value: _isToasted,
+                    onChanged: (value) {
+                      setState(() => _isToasted = value);
+                    },
+                  ),
+                  const Text('toasted', style: normalText),
+                ],
+              ),
+              const SizedBox(height: 10),
+              DropdownMenu<BreadType>(
+                textStyle: normalText,
+                initialSelection: _selectedBreadType,
+                onSelected: _onBreadTypeSelected,
+                dropdownMenuEntries: _buildDropdownEntries(),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.all(40.0),
+                child: TextField(
+                  key: const Key('notes_textfield'),
+                  controller: _notesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Add a note (e.g., no onions)',
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                StyledButton(
-                  onPressed: _quantity > 0 ? () => _addToCart() : null,
-                  icon: Icons.add_shopping_cart,
-                  label: 'Add to Cart',
-                  backgroundColor: Colors.blue,
-                ),
-                const SizedBox(width: 16),
-                Row(
-                  children: [
-                    StyledButton(
-                      onPressed: _getDecreaseCallback(),
-                      icon: Icons.remove,
-                      label: 'Remove',
-                      backgroundColor: Colors.red,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '$_quantity',
-                      style: normalText,
-                    ),
-                    const SizedBox(width: 8),
-                    StyledButton(
-                      onPressed: _getIncreaseCallback(),
-                      icon: Icons.add,
-                      label: 'Add',
-                      backgroundColor: Colors.green,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  StyledButton(
+                    onPressed: _quantity > 0 ? () => _addToCart() : null,
+                    icon: Icons.add_shopping_cart,
+                    label: 'Add to Cart',
+                    backgroundColor: Colors.blue,
+                  ),
+                  const SizedBox(width: 16),
+                  Row(
+                    children: [
+                      StyledButton(
+                        onPressed: _getDecreaseCallback(),
+                        icon: Icons.remove,
+                        label: 'Remove',
+                        backgroundColor: Colors.red,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '$_quantity',
+                        style: normalText,
+                      ),
+                      const SizedBox(width: 8),
+                      StyledButton(
+                        onPressed: _getIncreaseCallback(),
+                        icon: Icons.add,
+                        label: 'Add',
+                        backgroundColor: Colors.green,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
