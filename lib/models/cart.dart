@@ -2,7 +2,6 @@ import 'sandwich.dart';
 import 'package:sandwich_shop/repositories/pricing_repository.dart';
 
 class Cart {
-  Cart();
   final Map<Sandwich, int> _items = {};
 
   // Returns a read-only copy of the items and their quantities
@@ -63,34 +62,5 @@ class Cart {
       return _items[sandwich]!;
     }
     return 0;
-  }
-
-  void replaceItem(Sandwich sandwich, Sandwich updated) {}
-
-  void removeCompletely(Sandwich sandwichA) {}
-
-  Map<String, dynamic> toJson() {
-    return {
-      'items': _items.entries.map((entry) {
-        return {
-          'sandwich': entry.key.toJson(),
-          'quantity': entry.value,
-        };
-      }).toList(),
-    };
-  }
-
-  static Cart fromJson(Map<String, dynamic> json) {
-    final cart = Cart();
-    final items = json['items'] as List<dynamic>? ?? [];
-    for (final item in items) {
-      final sandwichMap = item['sandwich'] as Map<String, dynamic>;
-      final quantity = (item['quantity'] as int?) ?? 0;
-      final sandwich = Sandwich.fromJson(sandwichMap);
-      if (quantity > 0) {
-        cart._items[sandwich] = quantity;
-      }
-    }
-    return cart;
   }
 }

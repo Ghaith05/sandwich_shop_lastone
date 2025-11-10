@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sandwich_shop/views/app_styles.dart';
-import 'package:sandwich_shop/views/app_drawer.dart';
 import 'package:sandwich_shop/views/order_screen.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
@@ -19,26 +18,6 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  void _goBack() {
-    Navigator.pop(context);
-  }
-
-  String _getSizeText(bool isFootlong) {
-    if (isFootlong) {
-      return 'Footlong';
-    } else {
-      return 'Six-inch';
-    }
-  }
-
-  double _getItemPrice(Sandwich sandwich, int quantity) {
-    final PricingRepository pricingRepository = PricingRepository();
-    return pricingRepository.calculatePrice(
-      quantity: quantity,
-      isFootlong: sandwich.isFootlong,
-    );
-  }
-
   Future<void> _navigateToCheckout() async {
     if (widget.cart.items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -78,75 +57,59 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
-  void _showEditItemSheet(Sandwich sandwich) {
-    bool isFootlong = sandwich.isFootlong;
-    BreadType bread = sandwich.breadType;
+  String _getSizeText(bool isFootlong) {
+    if (isFootlong) {
+      return 'Footlong';
+    } else {
+      return 'Six-inch';
+    }
+  }
 
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (BuildContext ctx) {
-        return StatefulBuilder(builder: (context, setModalState) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('Edit ${sandwich.name}', style: heading2),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Text('Six-inch', style: normalText),
-                    Switch(
-                      value: isFootlong,
-                      onChanged: (v) => setModalState(() => isFootlong = v),
-                    ),
-                    const Text('Footlong', style: normalText),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                DropdownMenu<BreadType>(
-                  textStyle: normalText,
-                  initialSelection: bread,
-                  onSelected: (BreadType? b) {
-                    if (b != null) setModalState(() => bread = b);
-                  },
-                  dropdownMenuEntries: BreadType.values
-                      .map((bt) => DropdownMenuEntry<BreadType>(
-                          value: bt, label: bt.name))
-                      .toList(),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () {
-                    final Sandwich updated = Sandwich(
-                      type: sandwich.type,
-                      isFootlong: isFootlong,
-                      breadType: bread,
-                    );
-                    setState(() {
-                      widget.cart.replaceItem(sandwich, updated);
-                    });
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${sandwich.name} updated')),
-                    );
-                  },
-                  child: const Text('Save'),
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          );
-        });
-      },
+  double _getItemPrice(Sandwich sandwich, int quantity) {
+    final PricingRepository pricingRepository = PricingRepository();
+    return pricingRepository.calculatePrice(
+      quantity: quantity,
+      isFootlong: sandwich.isFootlong,
+    );
+  }
+
+  void _incrementQuantity(Sandwich sandwich) {
+    setState(() {
+      widget.cart.add(sandwich, quantity: 1);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Quantity increased')),
+    );
+  }
+
+  void _decrementQuantity(Sandwich sandwich) {
+    final wasPresent = widget.cart.items.containsKey(sandwich);
+    setState(() {
+      widget.cart.remove(sandwich, quantity: 1);
+    });
+    if (!widget.cart.items.containsKey(sandwich) && wasPresent) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Item removed from cart')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Quantity decreased')),
+      );
+    }
+  }
+
+  void _removeItem(Sandwich sandwich) {
+    setState(() {
+      widget.cart.remove(sandwich, quantity: widget.cart.getQuantity(sandwich));
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Item removed from cart')),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const AppDrawer(),
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -159,15 +122,6 @@ class _CartScreenState extends State<CartScreen> {
           'Cart View',
           style: heading1,
         ),
-        actions: [
-          Builder(builder: (ctx) {
-            return IconButton(
-              tooltip: 'Open navigation menu',
-              icon: const Icon(Icons.menu),
-              onPressed: () => Scaffold.of(ctx).openDrawer(),
-            );
-          }),
-        ],
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -175,84 +129,51 @@ class _CartScreenState extends State<CartScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-              for (MapEntry<Sandwich, int> entry in widget.cart.items.entries)
-                Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      children: [
-                        // Thumbnail
-                        SizedBox(
-                          height: 56,
-                          width: 56,
-                          child: Image.asset(entry.key.image,
-                              fit: BoxFit.cover,
-                              errorBuilder: (c, e, s) =>
-                                  const Icon(Icons.image_not_supported)),
-                        ),
-                        const SizedBox(width: 12),
-                        // Details
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(entry.key.name, style: heading2),
-                              Text(
-                                  '${_getSizeText(entry.key.isFootlong)} on ${entry.key.breadType.name} bread',
-                                  style: normalText),
-                              const SizedBox(height: 6),
-                              Text(
-                                  'Qty: ${entry.value} - £${_getItemPrice(entry.key, entry.value).toStringAsFixed(2)}',
-                                  style: normalText),
-                            ],
+              if (widget.cart.items.isEmpty)
+                const Text(
+                  'Your cart is empty.',
+                  style: heading2,
+                  textAlign: TextAlign.center,
+                )
+              else
+                for (MapEntry<Sandwich, int> entry in widget.cart.items.entries)
+                  Column(
+                    children: [
+                      Text(entry.key.name, style: heading2),
+                      Text(
+                        '${_getSizeText(entry.key.isFootlong)} on ${entry.key.breadType.name} bread',
+                        style: normalText,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove),
+                            onPressed: () => _decrementQuantity(entry.key),
                           ),
-                        ),
-                        // Actions
-                        Column(
-                          children: [
-                            IconButton(
-                              onPressed: () => _showEditItemSheet(entry.key),
-                              icon: const Icon(Icons.edit),
-                              tooltip: 'Edit item',
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                // Remove item and show Undo SnackBar
-                                final removedSandwich = entry.key;
-                                final removedQty =
-                                    widget.cart.getQuantity(removedSandwich);
-                                setState(() {
-                                  widget.cart.removeCompletely(removedSandwich);
-                                });
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content:
-                                        Text('${removedSandwich.name} removed'),
-                                    action: SnackBarAction(
-                                      label: 'Undo',
-                                      onPressed: () {
-                                        // Restore the removed item
-                                        setState(() {
-                                          widget.cart.add(removedSandwich,
-                                              quantity: removedQty);
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.delete),
-                              tooltip: 'Remove item',
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          Text(
+                            'Qty: ${entry.value}',
+                            style: normalText,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add),
+                            onPressed: () => _incrementQuantity(entry.key),
+                          ),
+                          const SizedBox(width: 16),
+                          Text(
+                            '£${_getItemPrice(entry.key, entry.value).toStringAsFixed(2)}',
+                            style: normalText,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            tooltip: 'Remove item',
+                            onPressed: () => _removeItem(entry.key),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                ),
               Text(
                 'Total: £${widget.cart.totalPrice.toStringAsFixed(2)}',
                 style: heading2,
@@ -276,7 +197,7 @@ class _CartScreenState extends State<CartScreen> {
               ),
               const SizedBox(height: 20),
               StyledButton(
-                onPressed: _goBack,
+                onPressed: () => Navigator.pop(context),
                 icon: Icons.arrow_back,
                 label: 'Back to Order',
                 backgroundColor: Colors.grey,

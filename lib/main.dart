@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sandwich_shop/views/about_screen.dart';
 import 'package:sandwich_shop/views/order_screen.dart';
 
 void main() {
@@ -11,17 +10,9 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Sandwich Shop App',
-      home: const OrderScreen(maxQuantity: 5),
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case '/about':
-            return MaterialPageRoute(builder: (_) => const AboutScreen());
-          default:
-            return MaterialPageRoute(builder: (_) => const OrderScreen(maxQuantity: 5));
-        }
-      },
+      home: OrderScreen(maxQuantity: 5),
     );
   }
 }

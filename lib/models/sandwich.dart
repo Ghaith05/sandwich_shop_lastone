@@ -41,34 +41,4 @@ class Sandwich {
     }
     return 'assets/images/${typeString}_$sizeString.png';
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'type': type.name,
-      'isFootlong': isFootlong,
-      'breadType': breadType.name,
-    };
-  }
-
-  factory Sandwich.fromJson(Map<String, dynamic> json) {
-    final typeStr = json['type'] as String;
-    final breadStr = json['breadType'] as String;
-    return Sandwich(
-      type: SandwichType.values.firstWhere((e) => e.name == typeStr),
-      isFootlong: json['isFootlong'] as bool,
-      breadType: BreadType.values.firstWhere((e) => e.name == breadStr),
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is Sandwich &&
-        other.type == type &&
-        other.isFootlong == isFootlong &&
-        other.breadType == breadType;
-  }
-
-  @override
-  int get hashCode => Object.hash(type, isFootlong, breadType);
 }
