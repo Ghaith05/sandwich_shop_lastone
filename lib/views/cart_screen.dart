@@ -4,6 +4,7 @@ import 'package:sandwich_shop/views/order_screen.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:sandwich_shop/repositories/pricing_repository.dart';
+import 'package:sandwich_shop/views/checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
   final Cart cart;
@@ -35,6 +36,45 @@ class _CartScreenState extends State<CartScreen> {
       quantity: quantity,
       isFootlong: sandwich.isFootlong,
     );
+  }
+
+  Future<void> _navigateToCheckout() async {
+    if (widget.cart.items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your cart is empty'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckoutScreen(cart: widget.cart),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        widget.cart.clear();
+      });
+
+      final String orderId = result['orderId'] as String;
+      final String estimatedTime = result['estimatedTime'] as String;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('Order $orderId confirmed! Estimated time: $estimatedTime'),
+          duration: const Duration(seconds: 4),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Navigator.pop(context);
+    }
   }
 
   void _showEditItemSheet(Sandwich sandwich) {
@@ -168,14 +208,29 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                             IconButton(
                               onPressed: () {
+                                // Remove item and show Undo SnackBar
+                                final removedSandwich = entry.key;
+                                final removedQty =
+                                    widget.cart.getQuantity(removedSandwich);
                                 setState(() {
-                                  widget.cart
-                                      .remove(entry.key, quantity: 99999);
+                                  widget.cart.removeCompletely(removedSandwich);
                                 });
+
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                      content:
-                                          Text('${entry.key.name} removed')),
+                                    content:
+                                        Text('${removedSandwich.name} removed'),
+                                    action: SnackBarAction(
+                                      label: 'Undo',
+                                      onPressed: () {
+                                        // Restore the removed item
+                                        setState(() {
+                                          widget.cart.add(removedSandwich,
+                                              quantity: removedQty);
+                                        });
+                                      },
+                                    ),
+                                  ),
                                 );
                               },
                               icon: const Icon(Icons.delete),
@@ -191,6 +246,22 @@ class _CartScreenState extends State<CartScreen> {
                 'Total: £${widget.cart.totalPrice.toStringAsFixed(2)}',
                 style: heading2,
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Builder(
+                builder: (BuildContext context) {
+                  final bool cartHasItems = widget.cart.items.isNotEmpty;
+                  if (cartHasItems) {
+                    return StyledButton(
+                      onPressed: _navigateToCheckout,
+                      icon: Icons.payment,
+                      label: 'Checkout',
+                      backgroundColor: Colors.orange,
+                    );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                },
               ),
               const SizedBox(height: 20),
               StyledButton(
