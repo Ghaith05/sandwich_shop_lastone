@@ -1,67 +1,66 @@
-import 'package:sandwich_shop/models/sandwich.dart';
-
-class CartItem {
-  final Sandwich sandwich;
-  final int quantity;
-  final String? note;
-
-  CartItem({
-    required this.sandwich,
-    required this.quantity,
-    this.note,
-  });
-}
+import 'sandwich.dart';
+import 'package:sandwich_shop/repositories/pricing_repository.dart';
 
 class Cart {
-  final List<CartItem> _items = [];
+  final Map<Sandwich, int> _items = {};
 
-  List<CartItem> get items => List.unmodifiable(_items);
+  // Returns a read-only copy of the items and their quantities
+  Map<Sandwich, int> get items => Map.unmodifiable(_items);
 
-  void addToCart({
-    required Sandwich sandwich,
-    required int quantity,
-    String? note,
-  }) {
-    if (quantity <= 0) {
-      throw ArgumentError('Quantity must be greater than zero');
+  void add(Sandwich sandwich, {int quantity = 1}) {
+    if (_items.containsKey(sandwich)) {
+      _items[sandwich] = _items[sandwich]! + quantity;
+    } else {
+      _items[sandwich] = quantity;
     }
-
-    _items.add(CartItem(
-      sandwich: sandwich,
-      quantity: quantity,
-      note: note,
-    ));
   }
 
-  void removeFromCart(int index) {
-    if (index < 0 || index >= _items.length) {
-      throw ArgumentError('Invalid cart item index');
+  void remove(Sandwich sandwich, {int quantity = 1}) {
+    if (_items.containsKey(sandwich)) {
+      final currentQty = _items[sandwich]!;
+      if (currentQty > quantity) {
+        _items[sandwich] = currentQty - quantity;
+      } else {
+        _items.remove(sandwich);
+      }
     }
-    _items.removeAt(index);
   }
 
   void clear() {
     _items.clear();
   }
 
-  int get totalItems {
-    return _items.fold(0, (sum, item) => sum + item.quantity);
-  }
-
-  /// Calculate total price for items in the cart.
-  /// Footlong = £11, Six-inch = £7.
   double get totalPrice {
-    const double sixInchPrice = 7.0;
-    const double footlongPrice = 11.0;
-    return _items.fold(0.0, (sum, item) {
-      // Determine price from the sandwich size field. Avoid relying on any
-      // nullable helper on the Sandwich model.
-      final pricePer = (item.sandwich.size == SandwichSize.footlong)
-          ? footlongPrice
-          : sixInchPrice;
-      return sum + pricePer * item.quantity;
-    });
+    final pricingRepository = PricingRepository();
+    double total = 0.0;
+
+    for (Sandwich sandwich in _items.keys) {
+      int quantity = _items[sandwich]!;
+      total += pricingRepository.calculatePrice(
+        quantity: quantity,
+        isFootlong: sandwich.isFootlong,
+      );
+    }
+
+    return total;
   }
 
-  void add(Sandwich sandwich, {required int quantity}) {}
+  bool get isEmpty => _items.isEmpty;
+
+  int get length => _items.length;
+
+  int get countOfItems {
+    int total = 0;
+    for (Sandwich sandwich in _items.keys) {
+      total += _items[sandwich]!;
+    }
+    return total;
+  }
+
+  int getQuantity(Sandwich sandwich) {
+    if (_items.containsKey(sandwich)) {
+      return _items[sandwich]!;
+    }
+    return 0;
+  }
 }
