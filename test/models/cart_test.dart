@@ -82,6 +82,22 @@ void main() {
       expect(cart.items, isEmpty);
     });
 
+    test('can replace an item with updated options and update total price', () {
+      // Add one six-inch sandwich
+      cart.add(sandwichB, quantity: 1);
+      expect(cart.getQuantity(sandwichB), 1);
+      // Replace six-inch with footlong for same sandwich type
+      final updated = Sandwich(
+        type: SandwichType.tunaMelt,
+        isFootlong: true,
+        breadType: BreadType.wheat,
+      );
+      cart.replaceItem(sandwichB, updated);
+      // Total should reflect footlong price (£11)
+      expect(cart.totalPrice, equals(11.0));
+      expect(cart.getQuantity(updated), 1);
+    });
+
     test('getQuantity returns correct quantity', () {
       cart.add(sandwichA, quantity: 4);
       expect(cart.getQuantity(sandwichA), 4);
@@ -116,6 +132,25 @@ void main() {
       cart.remove(sandwichA, quantity: 5);
       expect(cart.getQuantity(sandwichA), 0);
       expect(cart.isEmpty, isTrue);
+    });
+
+    test('removeCompletely removes the entry regardless of quantity', () {
+      cart.add(sandwichA, quantity: 3);
+      cart.removeCompletely(sandwichA);
+      expect(cart.getQuantity(sandwichA), 0);
+      expect(cart.isEmpty, isTrue);
+    });
+
+    test('cart can be serialized to and from json', () {
+      cart.add(sandwichA, quantity: 2);
+      cart.add(sandwichB, quantity: 1);
+
+      final Map<String, dynamic> json = cart.toJson();
+      final Cart restored = Cart.fromJson(json);
+
+      expect(restored.getQuantity(sandwichA), 2);
+      expect(restored.getQuantity(sandwichB), 1);
+      expect(restored.totalPrice, equals(cart.totalPrice));
     });
   });
 }

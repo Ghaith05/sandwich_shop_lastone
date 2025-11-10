@@ -2,6 +2,7 @@ import 'sandwich.dart';
 import 'package:sandwich_shop/repositories/pricing_repository.dart';
 
 class Cart {
+  Cart();
   final Map<Sandwich, int> _items = {};
 
   // Returns a read-only copy of the items and their quantities
@@ -62,5 +63,60 @@ class Cart {
       return _items[sandwich]!;
     }
     return 0;
+  }
+
+  /// Replace an existing sandwich key with an updated sandwich instance while
+  /// preserving the quantity. If the original sandwich is not present, this
+  /// becomes a no-op.
+  void replaceItem(Sandwich oldSandwich, Sandwich newSandwich) {
+    if (!_items.containsKey(oldSandwich)) return;
+    final qty = _items.remove(oldSandwich)!;
+    // If there is already an entry for newSandwich, merge quantities.
+    if (_items.containsKey(newSandwich)) {
+      _items[newSandwich] = _items[newSandwich]! + qty;
+    } else {
+      _items[newSandwich] = qty;
+    }
+  }
+
+  /// Remove the sandwich entry completely (regardless of its current
+  /// quantity). This is a convenience helper for explicit deletions.
+  void removeCompletely(Sandwich sandwich) {
+    _items.remove(sandwich);
+  }
+
+  /// Serialize the cart to JSON. The structure is a list of entries where each
+  /// entry contains the sandwich serialized and its quantity.
+  Map<String, dynamic> toJson() {
+    return {
+      'items': _items.entries
+          .map((e) => {
+                'sandwich': e.key.toJson(),
+                'quantity': e.value,
+              })
+          .toList(),
+    };
+  }
+
+  /// Construct a Cart from JSON produced by [toJson]. Unknown or invalid
+  /// entries are ignored.
+  factory Cart.fromJson(Map<String, dynamic> json) {
+    final Cart cart = Cart();
+    final items = json['items'];
+    if (items is List) {
+      for (final dynamic entry in items) {
+        if (entry is Map<String, dynamic>) {
+          try {
+            final sandwichMap = entry['sandwich'] as Map<String, dynamic>;
+            final quantity = entry['quantity'] as int;
+            final sandwich = Sandwich.fromJson(sandwichMap);
+            cart.add(sandwich, quantity: quantity);
+          } catch (_) {
+            // Ignore malformed entries
+          }
+        }
+      }
+    }
+    return cart;
   }
 }
