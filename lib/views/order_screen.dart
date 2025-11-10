@@ -3,6 +3,7 @@ import 'package:sandwich_shop/views/app_styles.dart';
 import 'package:sandwich_shop/views/cart_screen.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
+import 'package:sandwich_shop/views/profile_screen.dart';
 
 class OrderScreen extends StatefulWidget {
   final int maxQuantity;
@@ -154,6 +155,18 @@ class _OrderScreenState extends State<OrderScreen> {
                     );
                   },
                 ),
+              ),
+              const SizedBox(height: 20),
+              StyledButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                  );
+                },
+                icon: Icons.person,
+                label: 'Edit Profile',
+                backgroundColor: Colors.orange,
               ),
               const SizedBox(height: 20),
               DropdownMenu<SandwichType>(
