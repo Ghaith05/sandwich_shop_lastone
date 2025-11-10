@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sandwich_shop/views/app_styles.dart';
+import 'package:sandwich_shop/views/app_drawer.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -62,8 +63,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final bool canSave = _isNameValid && _isEmailValid;
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text('Profile', style: heading1),
+        actions: [
+          Builder(builder: (ctx) {
+            return IconButton(
+              tooltip: 'Open navigation menu',
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(ctx).openDrawer(),
+            );
+          }),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

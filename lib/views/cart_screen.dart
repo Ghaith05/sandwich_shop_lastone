@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sandwich_shop/views/app_styles.dart';
+import 'package:sandwich_shop/views/app_drawer.dart';
 import 'package:sandwich_shop/views/order_screen.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
@@ -145,6 +146,7 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -157,6 +159,15 @@ class _CartScreenState extends State<CartScreen> {
           'Cart View',
           style: heading1,
         ),
+        actions: [
+          Builder(builder: (ctx) {
+            return IconButton(
+              tooltip: 'Open navigation menu',
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(ctx).openDrawer(),
+            );
+          }),
+        ],
       ),
       body: Center(
         child: SingleChildScrollView(

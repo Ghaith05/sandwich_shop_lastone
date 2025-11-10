@@ -61,12 +61,12 @@ class _CartEditModalState extends State<CartEditModal> {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: Text('Six-inch', style: normalText)),
+              const Expanded(child: Text('Six-inch', style: normalText)),
               Switch(
                 value: isFootlong,
                 onChanged: (v) => setState(() => isFootlong = v),
               ),
-              Expanded(child: Text('Footlong', style: normalText)),
+              const Expanded(child: Text('Footlong', style: normalText)),
             ],
           ),
           const SizedBox(height: 8),
