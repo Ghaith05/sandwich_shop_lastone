@@ -82,6 +82,22 @@ void main() {
       expect(cart.items, isEmpty);
     });
 
+    test('can replace an item with updated options and update total price', () {
+      // Add one six-inch sandwich
+      cart.add(sandwichB, quantity: 1);
+      expect(cart.getQuantity(sandwichB), 1);
+      // Replace six-inch with footlong for same sandwich type
+      final updated = Sandwich(
+        type: SandwichType.tunaMelt,
+        isFootlong: true,
+        breadType: BreadType.wheat,
+      );
+      cart.replaceItem(sandwichB, updated);
+      // Total should reflect footlong price (£11)
+      expect(cart.totalPrice, equals(11.0));
+      expect(cart.getQuantity(updated), 1);
+    });
+
     test('getQuantity returns correct quantity', () {
       cart.add(sandwichA, quantity: 4);
       expect(cart.getQuantity(sandwichA), 4);

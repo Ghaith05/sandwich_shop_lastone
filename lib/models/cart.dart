@@ -63,4 +63,18 @@ class Cart {
     }
     return 0;
   }
+
+  /// Replace an existing sandwich key with an updated sandwich instance while
+  /// preserving the quantity. If the original sandwich is not present, this
+  /// becomes a no-op.
+  void replaceItem(Sandwich oldSandwich, Sandwich newSandwich) {
+    if (!_items.containsKey(oldSandwich)) return;
+    final qty = _items.remove(oldSandwich)!;
+    // If there is already an entry for newSandwich, merge quantities.
+    if (_items.containsKey(newSandwich)) {
+      _items[newSandwich] = _items[newSandwich]! + qty;
+    } else {
+      _items[newSandwich] = qty;
+    }
+  }
 }
