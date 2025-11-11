@@ -63,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Image.asset('assets/images/logo.png'),
           ),
         ),
-        title: const Text(
+        title: Text(
           'Profile',
           style: heading1,
         ),
