@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sandwich_shop/views/app_styles.dart';
+import 'package:provider/provider.dart';
+import 'package:sandwich_shop/models/cart.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -54,15 +56,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile', style: heading1),
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SizedBox(
+            height: 40,
+            child: Image.asset('assets/images/logo.png'),
+          ),
+        ),
+        title: const Text(
+          'Profile',
+          style: heading1,
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Builder(builder: (context) {
+              final Cart cart = Provider.of<Cart>(context);
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.shopping_cart),
+                  const SizedBox(width: 4),
+                  SizedBox(
+                    width: 20,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '${cart.countOfItems}',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Enter your details:', style: heading2),
-            const SizedBox(height: 20),
+            const Text('Enter your details:'),
+            const SizedBox(height: 8),
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
@@ -70,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             TextField(
               controller: _locationController,
               decoration: const InputDecoration(
@@ -78,7 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _saveProfile,
               child: const Text('Save Profile'),

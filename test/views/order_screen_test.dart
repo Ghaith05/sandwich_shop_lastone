@@ -2,16 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sandwich_shop/views/order_screen.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
+import 'package:provider/provider.dart';
+import 'package:sandwich_shop/models/cart.dart';
 
 void dummyFunction() {}
+
+Widget appWithCart(Widget home) {
+  return ChangeNotifierProvider(
+      create: (_) => Cart(), child: MaterialApp(home: home));
+}
 
 void main() {
   group('OrderScreen - Initial State', () {
     testWidgets('displays the initial UI elements correctly',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(appWithCart(orderScreen));
 
       expect(find.text('Sandwich Counter'), findsOneWidget);
 
@@ -36,8 +42,7 @@ void main() {
     testWidgets('displays initial cart summary with zero items and price',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(appWithCart(orderScreen));
 
       expect(find.text('Cart: 0 items - £0.00'), findsOneWidget);
     });
@@ -45,8 +50,7 @@ void main() {
     testWidgets('updates cart summary when items are added to cart',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(appWithCart(orderScreen));
 
       final Finder addToCartButtonFinder =
           find.widgetWithText(StyledButton, 'Add to Cart');
@@ -61,8 +65,7 @@ void main() {
     testWidgets('updates cart summary when quantity is increased before adding',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(appWithCart(orderScreen));
 
       final Finder addButtonFinder = find.byIcon(Icons.add);
       await tester.ensureVisible(addButtonFinder);
@@ -85,8 +88,7 @@ void main() {
     testWidgets('cart summary accumulates when multiple items are added',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(appWithCart(orderScreen));
 
       final Finder addToCartButtonFinder =
           find.widgetWithText(StyledButton, 'Add to Cart');
@@ -116,8 +118,8 @@ void main() {
     testWidgets('shows SnackBar confirmation when item is added to cart',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(ChangeNotifierProvider(
+          create: (_) => Cart(), child: const MaterialApp(home: orderScreen)));
 
       final Finder addToCartButtonFinder =
           find.widgetWithText(StyledButton, 'Add to Cart');
@@ -135,8 +137,8 @@ void main() {
     testWidgets('updates sandwich type when a new option is selected',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(ChangeNotifierProvider(
+          create: (_) => Cart(), child: const MaterialApp(home: orderScreen)));
 
       final Finder sandwichDropdownFinder =
           find.byType(DropdownMenu<SandwichType>);
@@ -154,8 +156,8 @@ void main() {
     testWidgets('updates sandwich size when the switch is toggled',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(ChangeNotifierProvider(
+          create: (_) => Cart(), child: const MaterialApp(home: orderScreen)));
 
       final Finder switchFinder = find.byType(Switch);
       await tester.tap(switchFinder);
@@ -168,8 +170,8 @@ void main() {
     testWidgets('updates bread type when a new option is selected',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(ChangeNotifierProvider(
+          create: (_) => Cart(), child: const MaterialApp(home: orderScreen)));
 
       final Finder breadDropdownFinder = find.byType(DropdownMenu<BreadType>);
       await tester.tap(breadDropdownFinder);
@@ -185,8 +187,7 @@ void main() {
     testWidgets('increases quantity when add button is tapped',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(appWithCart(orderScreen));
 
       final Finder addButtonFinder = find.byIcon(Icons.add);
       await tester.ensureVisible(addButtonFinder);
@@ -200,8 +201,7 @@ void main() {
     testWidgets('decreases quantity when remove button is tapped',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(appWithCart(orderScreen));
 
       final Finder addButtonFinder = find.byIcon(Icons.add);
       await tester.ensureVisible(addButtonFinder);
@@ -222,8 +222,7 @@ void main() {
     testWidgets('quantity does not go below zero and buttons are disabled',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(appWithCart(orderScreen));
 
       final Finder removeButtonFinder =
           find.widgetWithIcon(IconButton, Icons.remove);
@@ -232,7 +231,16 @@ void main() {
       await tester.tap(removeButtonFinder);
       await tester.pumpAndSettle();
 
-      expect(find.text('0'), findsOneWidget);
+      // There are multiple Text widgets that may contain '0' (e.g. cart summary),
+      // so target the quantity display specifically by matching its text style.
+      final Finder quantityTextFinder = find.byWidgetPredicate((widget) {
+        if (widget is Text) {
+          return widget.data == '0' &&
+              widget.style?.fontWeight == FontWeight.bold;
+        }
+        return false;
+      });
+      expect(quantityTextFinder, findsOneWidget);
       IconButton removeButton = tester.widget<IconButton>(removeButtonFinder);
       expect(removeButton.onPressed, isNull);
 
@@ -247,14 +255,14 @@ void main() {
       await tester.tap(removeButtonFinder);
       await tester.pumpAndSettle();
 
-      expect(find.text('0'), findsOneWidget);
+      // Confirm quantity still shows '0' using the same style-specific finder.
+      expect(quantityTextFinder, findsOneWidget);
     });
 
     testWidgets('navigates to cart view when View Cart button is tapped',
         (WidgetTester tester) async {
       const OrderScreen orderScreen = OrderScreen();
-      const MaterialApp app = MaterialApp(home: orderScreen);
-      await tester.pumpWidget(app);
+      await tester.pumpWidget(appWithCart(orderScreen));
 
       final Finder viewCartButtonFinder =
           find.widgetWithText(StyledButton, 'View Cart');
