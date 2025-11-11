@@ -4,6 +4,8 @@ import 'package:sandwich_shop/views/checkout_screen.dart';
 import 'package:sandwich_shop/models/cart.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:provider/provider.dart';
+import 'package:sandwich_shop/services/database_service.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 Widget appWithCart(Cart cart, Widget home) {
   return ChangeNotifierProvider.value(
@@ -11,6 +13,22 @@ Widget appWithCart(Cart cart, Widget home) {
 }
 
 void main() {
+  setUpAll(() {
+    // Initialize ffi for testing SQLite
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
+
+  setUp(() async {
+    // Clean database before each test
+    await DatabaseService.resetDatabase();
+  });
+
+  tearDown(() async {
+    // Clean up after each test
+    await DatabaseService.resetDatabase();
+  });
+
   group('CheckoutScreen', () {
     testWidgets('displays order summary with empty cart',
         (WidgetTester tester) async {
@@ -233,6 +251,172 @@ void main() {
       await tester.pumpWidget(appWithCart(cart, const CheckoutScreen()));
 
       expect(find.text('3x Chicken Teriyaki'), findsOneWidget);
+    });
+
+    testWidgets('saves order to database when payment is confirmed',
+        (WidgetTester tester) async {
+      final Cart cart = Cart();
+      final Sandwich sandwich = Sandwich(
+        type: SandwichType.veggieDelight,
+        isFootlong: true,
+        breadType: BreadType.white,
+      );
+      cart.add(sandwich, quantity: 2);
+
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(
+          builder: (context) => ChangeNotifierProvider.value(
+            value: cart,
+            child: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CheckoutScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('Go to Checkout'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+
+      // Navigate to checkout
+      await tester.tap(find.text('Go to Checkout'));
+      await tester.pumpAndSettle();
+
+      // Verify we're on checkout screen
+      expect(find.text('Checkout'), findsOneWidget);
+
+      // Tap confirm payment
+      await tester.tap(find.text('Confirm Payment'));
+      await tester.pumpAndSettle();
+
+      // Verify order was saved to database
+      final DatabaseService databaseService = DatabaseService();
+      final orders = await databaseService.getOrders();
+
+      expect(orders.length, equals(1));
+      expect(orders[0].itemCount, equals(2));
+      expect(
+          orders[0].totalAmount, equals(22.0)); // 2 footlong veggie @ £11 each
+      expect(orders[0].orderId, startsWith('ORD'));
+    });
+
+    testWidgets('generates unique order IDs for different payments',
+        (WidgetTester tester) async {
+      final Cart cart = Cart();
+      final Sandwich sandwich = Sandwich(
+        type: SandwichType.veggieDelight,
+        isFootlong: true,
+        breadType: BreadType.white,
+      );
+      cart.add(sandwich, quantity: 1);
+
+      // First payment
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(
+          builder: (context) => ChangeNotifierProvider.value(
+            value: cart,
+            child: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CheckoutScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('Go to Checkout'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+
+      await tester.tap(find.text('Go to Checkout'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Confirm Payment'));
+      await tester.pumpAndSettle();
+
+      // Second payment
+      await tester.tap(find.text('Go to Checkout'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Confirm Payment'));
+      await tester.pumpAndSettle();
+
+      // Verify both orders have unique IDs
+      final DatabaseService databaseService = DatabaseService();
+      final orders = await databaseService.getOrders();
+
+      expect(orders.length, equals(2));
+      expect(orders[0].orderId, isNot(equals(orders[1].orderId)));
+    });
+
+    testWidgets('saves correct order details to database',
+        (WidgetTester tester) async {
+      final Cart cart = Cart();
+      final Sandwich sandwich1 = Sandwich(
+        type: SandwichType.veggieDelight,
+        isFootlong: true,
+        breadType: BreadType.white,
+      );
+      final Sandwich sandwich2 = Sandwich(
+        type: SandwichType.chickenTeriyaki,
+        isFootlong: false,
+        breadType: BreadType.wheat,
+      );
+      cart.add(sandwich1, quantity: 1);
+      cart.add(sandwich2, quantity: 2);
+
+      await tester.pumpWidget(MaterialApp(
+        home: Builder(
+          builder: (context) => ChangeNotifierProvider.value(
+            value: cart,
+            child: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CheckoutScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text('Go to Checkout'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ));
+
+      await tester.tap(find.text('Go to Checkout'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Confirm Payment'));
+      await tester.pumpAndSettle();
+
+      final DatabaseService databaseService = DatabaseService();
+      final orders = await databaseService.getOrders();
+
+      expect(orders.length, equals(1));
+      expect(orders[0].itemCount, equals(3)); // 1 + 2 items
+      expect(orders[0].totalAmount, equals(25.0)); // £11 + (2 * £7)
+      expect(orders[0].orderDate.isBefore(DateTime.now()), isTrue);
+      expect(
+          orders[0]
+              .orderDate
+              .isAfter(DateTime.now().subtract(const Duration(minutes: 1))),
+          isTrue);
     });
   });
 }
