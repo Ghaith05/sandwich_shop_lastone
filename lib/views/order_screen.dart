@@ -6,6 +6,7 @@ import 'package:sandwich_shop/models/sandwich.dart';
 import 'package:sandwich_shop/views/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:sandwich_shop/views/settings_screen.dart';
+import 'package:sandwich_shop/views/order_history_screen.dart';
 
 class OrderScreen extends StatefulWidget {
   final int maxQuantity;
@@ -150,6 +151,7 @@ class _OrderScreenState extends State<OrderScreen> {
     return sandwich.image;
 
   }
+
   void _navigateToSettings() {
     Navigator.push(
       context,
@@ -158,6 +160,15 @@ class _OrderScreenState extends State<OrderScreen> {
       ),
     );
   }
+
+  void _navigateToOrderHistory() {
+  Navigator.push(
+    context,
+    MaterialPageRoute<void>(
+      builder: (BuildContext context) => const OrderHistoryScreen(),
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -295,6 +306,13 @@ class _OrderScreenState extends State<OrderScreen> {
                 icon: Icons.settings,
                 label: 'Settings',
                 backgroundColor: Colors.grey,
+              ),
+              const SizedBox(height: 20),
+              StyledButton(
+                onPressed: _navigateToOrderHistory,
+                icon: Icons.history,
+                label: 'Order History',
+                backgroundColor: Colors.indigo,
               ),
               const SizedBox(height: 20),
               Consumer<Cart>(
