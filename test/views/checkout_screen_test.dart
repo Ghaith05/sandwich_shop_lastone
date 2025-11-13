@@ -263,39 +263,29 @@ void main() {
       );
       cart.add(sandwich, quantity: 2);
 
-      await tester.pumpWidget(MaterialApp(
-        home: Builder(
-          builder: (context) => ChangeNotifierProvider.value(
-            value: cart,
-            child: Scaffold(
-              body: Builder(
-                builder: (context) => ElevatedButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CheckoutScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text('Go to Checkout'),
-                ),
-              ),
-            ),
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: cart,
+          child: MaterialApp(
+            home: const CheckoutScreen(),
           ),
         ),
-      ));
+      );
 
-      // Navigate to checkout
-      await tester.tap(find.text('Go to Checkout'));
-      await tester.pumpAndSettle();
+      // Let the widget build
+      await tester.pump();
 
       // Verify we're on checkout screen
       expect(find.text('Checkout'), findsOneWidget);
 
       // Tap confirm payment
       await tester.tap(find.text('Confirm Payment'));
-      await tester.pumpAndSettle();
+
+      // Wait for the 500ms delay + database operation
+      await tester.pump(const Duration(milliseconds: 600));
+
+      // Allow the navigation to complete
+      await tester.pump();
 
       // Verify order was saved to database
       final DatabaseService databaseService = DatabaseService();
@@ -319,39 +309,33 @@ void main() {
       cart.add(sandwich, quantity: 1);
 
       // First payment
-      await tester.pumpWidget(MaterialApp(
-        home: Builder(
-          builder: (context) => ChangeNotifierProvider.value(
-            value: cart,
-            child: Scaffold(
-              body: Builder(
-                builder: (context) => ElevatedButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CheckoutScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text('Go to Checkout'),
-                ),
-              ),
-            ),
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: cart,
+          child: MaterialApp(
+            home: const CheckoutScreen(),
           ),
         ),
-      ));
+      );
 
-      await tester.tap(find.text('Go to Checkout'));
-      await tester.pumpAndSettle();
+      await tester.pump();
       await tester.tap(find.text('Confirm Payment'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump();
 
       // Second payment
-      await tester.tap(find.text('Go to Checkout'));
-      await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: cart,
+          child: MaterialApp(
+            home: const CheckoutScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
       await tester.tap(find.text('Confirm Payment'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump();
 
       // Verify both orders have unique IDs
       final DatabaseService databaseService = DatabaseService();
@@ -377,33 +361,19 @@ void main() {
       cart.add(sandwich1, quantity: 1);
       cart.add(sandwich2, quantity: 2);
 
-      await tester.pumpWidget(MaterialApp(
-        home: Builder(
-          builder: (context) => ChangeNotifierProvider.value(
-            value: cart,
-            child: Scaffold(
-              body: Builder(
-                builder: (context) => ElevatedButton(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CheckoutScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text('Go to Checkout'),
-                ),
-              ),
-            ),
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: cart,
+          child: MaterialApp(
+            home: const CheckoutScreen(),
           ),
         ),
-      ));
+      );
 
-      await tester.tap(find.text('Go to Checkout'));
-      await tester.pumpAndSettle();
+      await tester.pump();
       await tester.tap(find.text('Confirm Payment'));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump();
 
       final DatabaseService databaseService = DatabaseService();
       final orders = await databaseService.getOrders();
