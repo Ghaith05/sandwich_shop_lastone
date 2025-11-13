@@ -23,12 +23,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   Future<void> _loadOrders() async {
     final List<SavedOrder> orders = await _databaseService.getOrders();
-    if (mounted) {
-      setState(() {
-        _orders = orders;
-        _isLoading = false;
-      });
-    }
+    setState(() {
+      _orders = orders;
+      _isLoading = false;
+    });
   }
 
   String _formatDate(DateTime date) {
