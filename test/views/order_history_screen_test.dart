@@ -42,7 +42,6 @@ void main() {
       expect(find.text('No orders yet'), findsOneWidget);
     });
 
-    // TODO: These tests hang due to async database operations
     // Skip for now until we can resolve the timing issue
 
     // testWidgets('displays order when exists', (WidgetTester tester) async {

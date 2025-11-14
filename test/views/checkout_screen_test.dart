@@ -266,8 +266,8 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: cart,
-          child: MaterialApp(
-            home: const CheckoutScreen(),
+          child: const MaterialApp(
+            home: CheckoutScreen(),
           ),
         ),
       );
@@ -312,8 +312,8 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: cart,
-          child: MaterialApp(
-            home: const CheckoutScreen(),
+          child: const MaterialApp(
+            home: CheckoutScreen(),
           ),
         ),
       );
@@ -327,8 +327,8 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: cart,
-          child: MaterialApp(
-            home: const CheckoutScreen(),
+          child: const MaterialApp(
+            home: CheckoutScreen(),
           ),
         ),
       );
@@ -364,8 +364,8 @@ void main() {
       await tester.pumpWidget(
         ChangeNotifierProvider.value(
           value: cart,
-          child: MaterialApp(
-            home: const CheckoutScreen(),
+          child: const MaterialApp(
+            home: CheckoutScreen(),
           ),
         ),
       );
