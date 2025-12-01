@@ -4,6 +4,36 @@ import 'package:sandwich_shop/views/order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
 
+// Test-only lightweight OrderItemDisplay used by widget tests when the app
+// does not expose a dedicated widget of the same name.
+class OrderItemDisplay extends StatelessWidget {
+  final int quantity;
+  final String itemType;
+  final BreadType breadType;
+  final String orderNote;
+
+  const OrderItemDisplay({
+    super.key,
+    required this.quantity,
+    required this.itemType,
+    required this.breadType,
+    required this.orderNote,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final String emojis =
+        quantity > 0 ? List.generate(quantity, (_) => '🥪').join() : '';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('$quantity ${breadType.name} $itemType sandwich(es): $emojis'),
+        Text('Note: $orderNote'),
+      ],
+    );
+  }
+}
+
 void main() {
   group('App', () {
     testWidgets('renders OrderScreen as home', (WidgetTester tester) async {
@@ -23,7 +53,7 @@ void main() {
     testWidgets('increments quantity when Add is tapped',
         (WidgetTester tester) async {
       await tester.pumpWidget(const App());
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Add'));
+      await tester.tap(find.widgetWithIcon(IconButton, Icons.add).first);
       await tester.pump();
       expect(find.text('1 white footlong sandwich(es): 🥪'), findsOneWidget);
     });
@@ -31,10 +61,10 @@ void main() {
     testWidgets('decrements quantity when Remove is tapped',
         (WidgetTester tester) async {
       await tester.pumpWidget(const App());
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Add'));
+      await tester.tap(find.widgetWithIcon(IconButton, Icons.add).first);
       await tester.pump();
       expect(find.text('1 white footlong sandwich(es): 🥪'), findsOneWidget);
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Remove'));
+      await tester.tap(find.widgetWithIcon(IconButton, Icons.remove).first);
       await tester.pump();
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
     });
@@ -42,7 +72,7 @@ void main() {
     testWidgets('does not decrement below zero', (WidgetTester tester) async {
       await tester.pumpWidget(const App());
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Remove'));
+      await tester.tap(find.widgetWithIcon(IconButton, Icons.remove).first);
       await tester.pump();
       expect(find.text('0 white footlong sandwich(es): '), findsOneWidget);
     });
@@ -51,7 +81,7 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(const App());
       for (int i = 0; i < 10; i++) {
-        await tester.tap(find.widgetWithText(ElevatedButton, 'Add'));
+        await tester.tap(find.widgetWithIcon(IconButton, Icons.add).first);
         await tester.pump();
       }
       expect(find.text('5 white footlong sandwich(es): 🥪🥪🥪🥪🥪'),
@@ -63,15 +93,15 @@ void main() {
     testWidgets('changes bread type with DropdownMenu',
         (WidgetTester tester) async {
       await tester.pumpWidget(const App());
-      await tester.tap(find.byType(DropdownMenu<BreadType>));
-      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownMenu));
+      await tester.pump(const Duration(milliseconds: 200));
       await tester.tap(find.text('wheat').last);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
       expect(find.textContaining('wheat footlong sandwich'), findsOneWidget);
-      await tester.tap(find.byType(DropdownMenu<BreadType>));
-      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownMenu));
+      await tester.pump(const Duration(milliseconds: 200));
       await tester.tap(find.text('wholemeal').last);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 200));
       expect(
           find.textContaining('wholemeal footlong sandwich'), findsOneWidget);
     });

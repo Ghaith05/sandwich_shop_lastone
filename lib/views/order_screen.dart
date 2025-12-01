@@ -25,7 +25,7 @@ class _OrderScreenState extends State<OrderScreen> {
   SandwichType _selectedSandwichType = SandwichType.veggieDelight;
   bool _isFootlong = true;
   BreadType _selectedBreadType = BreadType.white;
-  int _quantity = 1;
+  int _quantity = 0;
 
   @override
   void initState() {
@@ -149,7 +149,6 @@ class _OrderScreenState extends State<OrderScreen> {
       breadType: _selectedBreadType,
     );
     return sandwich.image;
-
   }
 
   void _navigateToSettings() {
@@ -162,13 +161,13 @@ class _OrderScreenState extends State<OrderScreen> {
   }
 
   void _navigateToOrderHistory() {
-  Navigator.push(
-    context,
-    MaterialPageRoute<void>(
-      builder: (BuildContext context) => const OrderHistoryScreen(),
-    ),
-  );
-}
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const OrderHistoryScreen(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,6 +223,30 @@ class _OrderScreenState extends State<OrderScreen> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Summary display for the currently selected item + emoji visualization
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$_quantity ${_selectedBreadType.name} ${_isFootlong ? 'footlong' : 'six-inch'} sandwich(es): ${_quantity > 0 ? List.generate(_quantity, (_) => '🥪').join() : ''}',
+                      style: normalText,
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      key: const Key('notes_textfield'),
+                      controller: _notesController,
+                      decoration: const InputDecoration(labelText: 'Notes'),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                        'Note: ${_notesController.text.isEmpty ? '' : _notesController.text}',
+                        style: normalText),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
               DropdownMenu<SandwichType>(
                 width: double.infinity,
                 label: const Text('Sandwich Type'),
@@ -274,7 +297,9 @@ class _OrderScreenState extends State<OrderScreen> {
                   ),
                   Text('$_quantity', style: heading2),
                   IconButton(
-                    onPressed: () => setState(() => _quantity++),
+                    onPressed: _quantity < widget.maxQuantity
+                        ? () => setState(() => _quantity++)
+                        : null,
                     icon: const Icon(Icons.add),
                   ),
                 ],
