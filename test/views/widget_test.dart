@@ -3,6 +3,7 @@ import 'package:sandwich_shop/main.dart';
 import 'package:sandwich_shop/views/order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:sandwich_shop/models/sandwich.dart';
+import 'package:sandwich_shop/views/common_widgets.dart';
 
 // Test-only lightweight OrderItemDisplay used by widget tests when the app
 // does not expose a dedicated widget of the same name.
